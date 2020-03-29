@@ -2,3 +2,4 @@ lib/**/*.js
 workspace/*
 config.sh
 export
+node_modules
