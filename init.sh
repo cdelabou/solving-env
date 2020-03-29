@@ -26,3 +26,4 @@ then
 else
     echo "Please specify a project name !"
 fi
+
