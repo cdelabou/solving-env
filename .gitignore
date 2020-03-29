@@ -1,0 +1,4 @@
+lib/**/*.js
+workspace/*
+config.sh
+export

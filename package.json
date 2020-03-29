@@ -1,0 +1,26 @@
+{
+  "name": "battledev",
+  "version": "1.0.0",
+  "description": "Battle dev tools",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -r ts-node/register lib/tests.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^10.14.1",
+    "typescript": "^3.0.3"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.6",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "ts-node": "^8.0.3"
+  }
+}

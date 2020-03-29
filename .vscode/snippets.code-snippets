@@ -1,0 +1,109 @@
+{
+	"Map matrix": {
+		"prefix": "matmap",
+		"body": [
+			"${1:matrix}.map((${2:line}, i) => ",
+			"\t$2.map((${3:value}, j) => {",
+			"\t\treturn ${0:0};",
+			"\t})",
+			");"
+		],
+		"description": "Map matrix values"
+	},
+	"Filled array": {
+		"prefix": "arrfill",
+		"body": [
+			"new Array(${1:size}).fill(0).map((_, i) => ${2:value});",
+		],
+		"description": "Map matrix values"
+	},
+	"Walk deep": {
+		"prefix": "walkdeep",
+		"body": [
+			"let stack: ${1:number}[][] = [[${2:initialValue}]];",
+			"",
+			"while(stack.length > 0) {",
+			"\tif (stack[0].length === 0) {",
+			"\t\tstack.shift();",
+			"\t} else {",
+			"\t\tconst current: ${1:number} = stack[0].shift()!;",
+			"\t\tconst depth = stack.length - 1;",
+			"",
+			"\t\tif (depth <= ${3:maxDepth}) {",
+			"\t\t\tlet layer: ${1:number}[] = ${0:[]};",
+			"\t\t\t",
+			"\t\t\tstack.unshift(layer);",
+			"\t\t}",
+			"\t}",
+			"}"
+		]
+	},
+	"Walk sorted": {
+		"prefix": "walksorted",
+		"body": [
+			"let stack: ${1:number}[] = [${2:initialValue}];",
+			"",
+			"while(stack.length > 0) {",
+			"\tconst current: ${1:number} = stack.shift()!;",
+			"\tconst depth = stack.length - 1;",
+			"",
+			"\tif (depth <= ${3:maxDepth}) {",
+			"\t\tstack.push(${0:[]});",
+			"",
+			"\t\tstack.sort((a,b) => a-b);",
+			"\t}",
+			"}"
+		]
+	},
+	"Walk": {
+		"prefix": "walk",
+		"body": [
+			"let current = ${1:startingValue};",
+			"let walker = ${2|walkLayers,walkDeep,walkSorted|}(current, ${3:maxDepth});",
+			"let res;",
+			"",
+			"while(!(res = walker.next(${4:generate(current)})).done) {",
+			"\tcurrent = res.value;",
+			"",
+			"\t$0",
+			"}"
+		],
+		"description": "walk deeply or by layer though layers"
+	},
+	"Walk layers": {
+		"prefix": "walklayers",
+		"body": [
+			"let previousLayer: ${1:number}[] = [${2:initialValue}];",
+			"let currentLayer: ${1:number}[] = [];",
+			"let depth = 0;",
+			"",
+			"while(previousLayer.length > 0 && depth <= ${3:maxDepth}) {",
+			"\tfor(let value of previousLayer) {",
+			"\t\tcurrentLayer = currentLayer.concat(${0:[]});",
+			"\t}",
+			"",
+			"\tpreviousLayer = currentLayer;",
+			"\tcurrentLayer = [];",
+			"",
+			"\tdepth += 1;",
+			"}"
+		]
+	},
+	"Matrix conditional range": {
+		"prefix": "matisinrange",
+		"body": [
+			"if (${1:x} >= 0 && ${2:y} >= 0 && $1 < ${3:array}.length && $2 < $3[$1].length) {",
+			"\t$0",
+			"}"
+		]
+	},
+	"Directions": {
+		"prefix": "dirs",
+		"body": "[[0, 1], [1, 0], [-1, 0], [0, -1]]"
+	},
+	"Directions with diagonal": {
+		"prefix": "dirsdiag",
+		"body": "[[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]"
+	}
+
+}
