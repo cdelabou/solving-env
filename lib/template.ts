@@ -3,7 +3,7 @@ declare var log: Function;
 
 // Compilé depuis des fichiers typescript :)
 
-import input, { num, nums, numsMat, tuples } from "../../lib/util/input";
+import input, { num, nums, numsMat, tuples } from "../../../lib/util/input";
 
 
 input(readline_object).then((data: string[]) => {
