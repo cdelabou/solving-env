@@ -5,7 +5,7 @@
  * @param startValue root of the tree
  * @param maxDepth max depth to reach (start value is at depth 0)
  */
-export function* walkLayers<M>(startValue: M, maxDepth: number): IterableIterator<M> {
+export function* walkLayers<M>(startValue: M, maxDepth: number): Generator<M, void, M[]> {
 	let previousLayer: M[] = [startValue];
 	let currentLayer: M[] = [];
 	let depth = 0;

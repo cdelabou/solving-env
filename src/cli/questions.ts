@@ -33,6 +33,7 @@ export const sessionNameQuestion = {
 }
 
 export const actionNameQuestion = {
+	name: "action",
 	type: "list",
 	choices: ["run", "watch", "export", "next", "previous"],
 	message: "What do you want to do next",

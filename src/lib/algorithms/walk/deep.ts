@@ -1,4 +1,4 @@
-export function* walkDeep<M>(startValue: M, maxDepth: number): IterableIterator<M> {
+export function* walkDeep<M>(startValue: M, maxDepth: number): Generator<M, void, M[]> {
 	let stack: M[][] = [[startValue]];
 
 	while(stack.length > 0) {

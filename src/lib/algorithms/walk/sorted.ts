@@ -4,7 +4,7 @@
  * @param maxDepth 
  * @param sort 
  */
-export function* walkSorted<M>(startValue: M, maxDepth: number, sort: (a: M, b: M) => number): IterableIterator<M> {
+export function* walkSorted<M>(startValue: M, maxDepth: number, sort: (a: M, b: M) => number): Generator<M, void, M[]> {
 	let stack: M[] = [startValue];
 
 	while(stack.length > 0) {

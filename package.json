@@ -1,39 +1,105 @@
 {
-  "name": "battledev",
-  "version": "1.0.0",
-  "description": "Battle dev tools",
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha -r ts-node/register lib/tests.ts"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/clear": "^0.1.0",
-    "@types/figlet": "^1.2.0",
-    "@types/inquirer": "^6.5.0",
-    "@types/node": "^10.14.1",
-    "@types/unzipper": "^0.10.3",
-    "chalk": "^3.0.0",
-    "clear": "^0.1.0",
-    "clui": "^0.3.6",
-    "figlet": "^1.3.0",
-    "inquirer": "^7.1.0",
-    "lodash": "^4.17.15",
-    "minimist": "^1.2.5",
-    "touch": "^3.1.0",
-    "typescript": "^3.0.3",
-    "unzipper": "^0.10.10"
-  },
-  "directories": {
-    "lib": "lib"
-  },
-  "keywords": [],
-  "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.6",
-    "chai": "^4.2.0",
-    "mocha": "^6.0.2",
-    "ts-node": "^8.0.3"
-  }
+	"name": "solvenv",
+	"displayName": "SolvEnv",
+	"description": "Solving environment for competitive programming",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.50.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:solvenv"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "solvenv",
+					"title": "SolvEnv",
+					"icon": "resources/icon.svg"
+				}
+			]
+		},
+		"views": {
+			"solvenv": [
+				{
+					"id": "solvenv",
+					"name": "SolvEnv"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "solvenv.helloWorld",
+					"when": "true",
+					"group": "navigation"
+				},
+				{
+					"command": "solvenv.helloWorld",
+					"when": "true"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "solvenv.helloWorld",
+					"when": "true",
+					"group": "inline"
+				},
+				{
+					"command": "solvenv.helloWorld",
+					"when": "true"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "solvenv.helloWorld",
+				"title": "Hello World",
+				"icon": {
+					"light": "resources/light/done_all-black-18dp.svg",
+					"dark": "resources/dark/done_all-white-18dp.svg"
+				}
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint src --ext ts",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/chai": "^4.2.13",
+		"@types/clear": "^0.1.0",
+		"@types/figlet": "^1.2.0",
+		"@types/glob": "^7.1.3",
+		"@types/inquirer": "^6.5.0",
+		"@types/mocha": "^8.0.0",
+		"@types/node": "^12.11.7",
+		"@types/unzipper": "^0.10.3",
+		"@types/vscode": "^1.50.0",
+		"@typescript-eslint/eslint-plugin": "^4.1.1",
+		"@typescript-eslint/parser": "^4.1.1",
+		"chai": "^4.2.0",
+		"chalk": "^3.0.0",
+		"clear": "^0.1.0",
+		"clui": "^0.3.6",
+		"eslint": "^7.9.0",
+		"figlet": "^1.3.0",
+		"glob": "^7.1.6",
+		"inquirer": "^7.1.0",
+		"lodash": "^4.17.15",
+		"minimist": "^1.2.5",
+		"mocha": "^8.1.3",
+		"touch": "^3.1.0",
+		"typescript": "^4.0.2",
+		"unzipper": "^0.10.10",
+		"vscode-test": "^1.4.0"
+	}
 }

@@ -1,19 +1,65 @@
-# Competitive programming TypeScript environment
+# solvenv README
 
-This project contains an development environment enabling the write solutions using typescript and export them.
+This is the README for your extension "solvenv". After writing up a brief description, we recommend including the following sections.
 
-## Install
+## Features
 
-You should first install `node` and `npm`.
+Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 
-For now the tool is only compatible with linux. Installation script is provided with `install.sh` for `apt` based systems, otherwise adapt it to your system.
+For example if there is an image subfolder under your extension project workspace:
 
-Your need to configure the project by creating a `config.sh` file, your can copy `config.sh.example` and specify your download folder. This is used to extract the downloaded test sets into a new problem.
+\!\[feature X\]\(images/feature-x.png\)
 
-## Creating a problem and running tests
+> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
-First of all, you should download the test sets from your challenge site into the specified download folder.
+## Requirements
 
-Then run `init.sh [name]` with name being the name of the problem. A folder is created into workspace, you can open the index.ts file containing the default template for the problem.
+If you have any requirements or dependencies, add a section describing those and how to install and configure them.
 
-When you want to test or export the solution, run `run.sh [name]`, an `export.js` file is created so you can export it to the competitive platform ! Don't worry, all the dependencies are wrapped into this file.
+## Extension Settings
+
+Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+
+For example:
+
+This extension contributes the following settings:
+
+* `myExtension.enable`: enable/disable this extension
+* `myExtension.thing`: set to `blah` to do something
+
+## Known Issues
+
+Calling out known issues can help limit users opening duplicate issues against your extension.
+
+## Release Notes
+
+Users appreciate release notes as you update your extension.
+
+### 1.0.0
+
+Initial release of ...
+
+### 1.0.1
+
+Fixed issue #.
+
+### 1.1.0
+
+Added features X, Y, and Z.
+
+-----------------------------------------------------------------------------------------------------------
+
+## Working with Markdown
+
+**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
+
+* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
+* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
+* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
+
+### For more information
+
+* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
+* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+
+**Enjoy!**

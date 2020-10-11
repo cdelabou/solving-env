@@ -4,9 +4,9 @@ import chalk = require("chalk");
 import clear = require("clear");
 
 
-import { sessionNameQuestion, setupQuestionFactory, whichZipQuestionFactory, clearSetsQuestion } from "./cli/questions";
-import { GlobalConfig } from "./cli/settings";
-import { Session } from "./cli/session";
+import { sessionNameQuestion, setupQuestionFactory, whichZipQuestionFactory, clearSetsQuestion, actionNameQuestion } from "../cli/questions";
+import { GlobalConfig } from "../cli/settings";
+import { Session } from "../cli/session";
 
 
 
@@ -36,6 +36,9 @@ async function main() {
 
 	const session = new Session(name, config);
 	await session.setup();
+
+	const { action } = await inquirer.prompt([actionNameQuestion])
+	
 }
 
 main();
