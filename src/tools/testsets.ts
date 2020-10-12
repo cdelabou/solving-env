@@ -1,10 +1,10 @@
 import { readdirSync, statSync, createWriteStream, createReadStream } from "fs";
 import { resolve } from "path";
-import { Session } from "./session";
 import chalk = require("chalk");
 import unzipper = require("unzipper");
 import * as vscode from "vscode";
-import { down } from "inquirer/lib/utils/readline";
+import { SessionTreeItem } from "../providers/SessionTreeItem";
+import * as path from "path";
 
 async function getDownloadFolderPath(context: vscode.ExtensionContext) {
 	let downloadsFolder = context.globalState.get<string | undefined>("downloadsFolder", undefined);
@@ -27,7 +27,7 @@ async function getDownloadFolderPath(context: vscode.ExtensionContext) {
 	return downloadsFolder;
 }
 
-export async function fetchExamples(session: Session, context: vscode.ExtensionContext) {
+export async function fetchExamples(session: SessionTreeItem, context: vscode.ExtensionContext) {
 	const downloadsFolder = await getDownloadFolderPath(context);
 	let options: { name: string, creation: number }[] = [];
 
@@ -51,8 +51,8 @@ export async function fetchExamples(session: Session, context: vscode.ExtensionC
 
 	if (fileName) {
 		// TODO const { clearSets } = await inquirer.prompt([clearSetsQuestion]);
-		const inputRegex = new RegExp(session.settings!.d.inputFilePattern!);
-		const outputRegex = new RegExp(session.settings!.d.outputFilePattern!);
+		const inputRegex = new RegExp(session.settings.inputFilePattern!);
+		const outputRegex = new RegExp(session.settings.outputFilePattern!);
 
 		//if (clearSets) {
 			// TODO clear
@@ -69,13 +69,13 @@ export async function fetchExamples(session: Session, context: vscode.ExtensionC
 
 				if (file &&  (match = fileName.match(inputRegex)) !== null) {
 					entry.pipe(createWriteStream(
-						resolve(session.problemPath(`inputs/input${parseInt(match[1])}.txt`))
+						resolve(path.join(session.path, `inputs/input${parseInt(match[1])}.txt`))
 					));
 
 					count ++;
 				} else if (file &&  (match = fileName.match(outputRegex)) !== null) {
 					entry.pipe(createWriteStream(
-						resolve(session.problemPath(`outputs/output${parseInt(match[1])}.txt`))
+						resolve(path.join(session.path, `outputs/output${parseInt(match[1])}.txt`))
 					));
 				} else {
 					entry.autodrain();

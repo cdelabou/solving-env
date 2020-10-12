@@ -1,30 +1,48 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { Session } from './tools/session';
+import { ProblemProvider } from './providers/ProblemProvider';
+import { SessionProvider } from './providers/SessionProvider';
+import { SessionTreeItem } from "./providers/SessionTreeItem";
+import * as path from "path";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	const sessionProvider = new SessionProvider(vscode.workspace.workspaceFolders![0].uri.fsPath, context);
+	const sessionTreeView = vscode.window.createTreeView('solvenv.sessions', {
+		treeDataProvider: sessionProvider
+	});
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "solvenv" is now active!');
+	const problemProvider = new ProblemProvider(null);
+	const problemTreeView = vscode.window.createTreeView('solvenv.problems', {
+		treeDataProvider: problemProvider
+	});
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposableHW = vscode.commands.registerCommand('solvenv.helloWorld', () => {
+	sessionTreeView.onDidChangeSelection((event) => {
+		if (event.selection.length == 1) {
+			const item = event.selection[0];
+			problemTreeView.title = item.label;
+			problemProvider.changeSession(item);
+		}
+	});
+
+	problemTreeView.onDidChangeSelection((event) => {
+		if (event.selection.length == 1) {
+			const item = event.selection[0];
+			const fileToEdit = vscode.Uri.file(path.join(item.path, "index.ts"));
+			vscode.window.showTextDocument(fileToEdit);
+		}
+	})
+
+	let helloWorld = vscode.commands.registerCommand('solvenv.helloWorld', () => {
 		// The code you place here will be executed every time your command is executed
 
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from SolvEnv!');
 	});
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposableInit = vscode.commands.registerCommand('solvenv.init', async () => {
+	let initSession = vscode.commands.registerCommand('solvenv.new_session', async () => {
 		const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 
 		if (!rootPath) {
@@ -35,23 +53,42 @@ export function activate(context: vscode.ExtensionContext) {
 		const name = await vscode.window.showInputBox({
 			placeHolder: "New Session Name"
 		});
-		
+
 		if (name) {
-			const session = new Session(name, context, rootPath);
-
-			if (session.exists()) {
-				vscode.window.showErrorMessage(`A session named '${name}' already exists, please pick another name.`);
-				return;
-			}
-
-			await session.createSession();
+			sessionProvider.createNew(name);
 			vscode.window.showInformationMessage(`Session '${name}' has been create successfully.`);
 		}
 
 	});
 
-	context.subscriptions.push(disposableHW, disposableInit);
+	let newProblem = vscode.commands.registerCommand('solvenv.new_problem', async () => {
+		const selectedSession = problemProvider.sessionItem;
+
+		if (!selectedSession) {
+			vscode.window.showErrorMessage("Please select a session before adding problems.");
+			return;
+		}
+
+		// Create new problem
+		await selectedSession.newProblem();
+
+		// Refresh
+		problemProvider.resfresh();
+	});
+
+	let launchSession = vscode.commands.registerCommand('solvenv.open_session', (item: SessionTreeItem) => {
+		if (!item) {
+			vscode.window.showWarningMessage(`No session specified, use the view on the left side of the editor instead.`);
+			return;
+		}
+
+		problemTreeView.title = item.label;
+		problemProvider.changeSession(item);
+	});
+
+	context.subscriptions.push(helloWorld, newProblem, initSession, launchSession);
+
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
