@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:solvenv"
+		"onView:solvenv",
+		"onCommand:solvenv.init"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -26,15 +27,15 @@
 		"views": {
 			"solvenv": [
 				{
-					"id": "solvenv",
-					"name": "SolvEnv"
+					"id": "solvenv.sessions",
+					"name": "Sessions"
 				}
 			]
 		},
 		"menus": {
 			"view/title": [
 				{
-					"command": "solvenv.helloWorld",
+					"command": "solvenv.init",
 					"when": "true",
 					"group": "navigation"
 				},
@@ -62,6 +63,14 @@
 				"icon": {
 					"light": "resources/light/done_all-black-18dp.svg",
 					"dark": "resources/dark/done_all-white-18dp.svg"
+				}
+			},
+			{
+				"command": "solvenv.init",
+				"title": "Create new session",
+				"icon": {
+					"light": "resources/light/add_session-black-18dp.svg",
+					"dark": "resources/dark/add_session-white-18dp.svg"
 				}
 			}
 		]

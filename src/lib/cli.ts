@@ -4,9 +4,9 @@ import chalk = require("chalk");
 import clear = require("clear");
 
 
-import { sessionNameQuestion, setupQuestionFactory, whichZipQuestionFactory, clearSetsQuestion, actionNameQuestion } from "../cli/questions";
-import { GlobalConfig } from "../cli/settings";
-import { Session } from "../cli/session";
+import { sessionNameQuestion, setupQuestionFactory, whichZipQuestionFactory, clearSetsQuestion, actionNameQuestion } from "../tools/questions";
+import { GlobalConfig } from "../tools/settings";
+import { Session } from "../tools/session";
 
 
 
@@ -26,22 +26,6 @@ const config: GlobalConfig = {
 	}
 }
 
-
-async function main() {
-	clear();
-	
-	console.log(chalk.yellow(figlet.textSync("cp-ts")));
-
-	const { name } = await inquirer.prompt([sessionNameQuestion])
-
-	const session = new Session(name, config);
-	await session.setup();
-
-	const { action } = await inquirer.prompt([actionNameQuestion])
-	
-}
-
-main();
 
 /**
  * Settings to retrieve

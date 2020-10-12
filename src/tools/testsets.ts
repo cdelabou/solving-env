@@ -1,14 +1,37 @@
 import { readdirSync, statSync, createWriteStream, createReadStream } from "fs";
-import { whichZipQuestionFactory, clearSetsQuestion } from "./questions";
 import { resolve } from "path";
 import { Session } from "./session";
-import inquirer = require("inquirer");
 import chalk = require("chalk");
 import unzipper = require("unzipper");
+import * as vscode from "vscode";
+import { down } from "inquirer/lib/utils/readline";
 
-export async function fetchExamples(session: Session) {
-	const downloadsFolder = session.globalConfig.downloadsFolder;
+async function getDownloadFolderPath(context: vscode.ExtensionContext) {
+	let downloadsFolder = context.globalState.get<string | undefined>("downloadsFolder", undefined);
+
+	// Ask for download folders if not specified
+	if (!downloadsFolder) {
+		let result = await vscode.window.showOpenDialog({
+			title: "Select download folder",
+			canSelectFolders: true,
+			canSelectFiles: false,
+			canSelectMany: false
+		});
+
+		if (!result || result.length == 0) return;
+
+		downloadsFolder = result[0].fsPath;
+		context.globalState.update("downloadsFolder", downloadsFolder);
+	}
+
+	return downloadsFolder;
+}
+
+export async function fetchExamples(session: Session, context: vscode.ExtensionContext) {
+	const downloadsFolder = await getDownloadFolderPath(context);
 	let options: { name: string, creation: number }[] = [];
+
+	if (!downloadsFolder) return;
 
 	// Find all zip possible options in the download folder
 	readdirSync(downloadsFolder).forEach(file => {
@@ -22,21 +45,18 @@ export async function fetchExamples(session: Session) {
 		}
 	});
 
-	options.push({ name: "Abort", creation: -1 });
 	options.sort((a, b) => b.creation - a.creation);
 
-	const { fileName } = await inquirer.prompt(
-		[whichZipQuestionFactory(options.map(it => it.name))]
-	);
+	const fileName = await vscode.window.showQuickPick(options.map(it => it.name));
 
-	if (fileName != "Abort") {
-		const { clearSets } = await inquirer.prompt([clearSetsQuestion]);
+	if (fileName) {
+		// TODO const { clearSets } = await inquirer.prompt([clearSetsQuestion]);
 		const inputRegex = new RegExp(session.settings!.d.inputFilePattern!);
 		const outputRegex = new RegExp(session.settings!.d.outputFilePattern!);
 
-		if (clearSets) {
+		//if (clearSets) {
 			// TODO clear
-		}
+		//}
 
 		let count = 0;
 
