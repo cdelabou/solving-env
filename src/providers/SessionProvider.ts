@@ -25,8 +25,8 @@ const defaultAvailableSetups = {
 export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem> {
   private areLibrariesCopied = false;
 
-  constructor(private workspaceRoot: string, private context: vscode.ExtensionContext) {
-    this.areLibrariesCopied = fs.existsSync(path.join(workspaceRoot, LIBRARIES_DIRECTORY));
+  constructor(private rootDir: vscode.Uri, private context: vscode.ExtensionContext) {
+    this.areLibrariesCopied = fs.existsSync(path.join(rootDir.fsPath, LIBRARIES_DIRECTORY));
   }
 
   getTreeItem(element: SessionTreeItem): SessionTreeItem {
@@ -34,11 +34,11 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
   }
 
   getChildren(element?: SessionTreeItem): Thenable<SessionTreeItem[]> {
-    const workspacePath = path.join(this.workspaceRoot, WORKSPACE_DIRECTORY);
-    
+    const workspacePath = vscode.Uri.joinPath(this.rootDir, WORKSPACE_DIRECTORY);
+
     // Root -> returns sessions names
-    if (!element && fs.existsSync(workspacePath)) {
-      return fs.promises.readdir(workspacePath)
+    if (!element) {
+      return vscode.workspace.fs.readDirectory(workspacePath)
         .then(async (files) => {
           // Copy libraries if they were not and some sessions exists
           if (files.length > 0 && !this.areLibrariesCopied) {
@@ -46,11 +46,11 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
           }
 
           return files.map(file => new SessionTreeItem(
-            file,
-            workspacePath,
+            file[0],
+            this.rootDir,
             this.context
           ))
-        });
+        }, () => []);
     }
 
     return Promise.resolve([]);
@@ -61,23 +61,18 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
   readonly onDidChangeTreeData: vscode.Event<SessionTreeItem | undefined> = this._onDidChangeTreeData.event;
 
   copyLibraries() {
-    return new Promise((res, rej) => {
-      fsextra.copy(this.context.extensionPath + "/resources/lib", path.join(this.workspaceRoot, "lib"), (err) => {
-        if (err) rej(err);
-        else {
-          this.areLibrariesCopied = true;
-          res();
-        }
-      });
-    });
+    return vscode.workspace.fs.copy(
+      vscode.Uri.joinPath(this.context.extensionUri, "resources/lib"),
+      vscode.Uri.joinPath(this.rootDir, "lib")
+    ).then(() => this.areLibrariesCopied = true);
   }
 
   async createNew(name: string) {
-    const cancellation = new vscode.CancellationTokenSource();
-    const sessionPath = path.join(this.workspaceRoot, WORKSPACE_DIRECTORY, name);
-    let libraryCopy: Promise<any> | undefined;
+    const sessionPath = vscode.Uri.joinPath(this.rootDir, WORKSPACE_DIRECTORY, name);
+    let libraryCopy: Thenable<any> | undefined;
 
-    if (fs.existsSync(sessionPath)) {
+    const stat = await vscode.workspace.fs.stat(sessionPath).then(it => it, () => null);
+    if (stat) {
       vscode.window.showErrorMessage(`Folder '${name}' already exists, please choose another name.`);
       return;
     }
@@ -87,17 +82,17 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
     }
 
     // Create directory
-    await fs.promises.mkdir(sessionPath, { recursive: true });
+    await vscode.workspace.fs.createDirectory(sessionPath);
 
     const setups = this.context.globalState.get<{ [name: string]: SessionSettings }>("availableSetups", defaultAvailableSetups);
 
     // Ask for settings
     const result = await vscode.window.showQuickPick(Object.keys(setups).map(label => ({ label })), {
       placeHolder: "Setup to use for the session"
-    }, cancellation.token);
+    });
 
     // Check for cancellation
-    if (cancellation.token.isCancellationRequested || !result) {
+    if (!result) {
       return;
     }
 
@@ -105,11 +100,13 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
     const settings = setups[result.label];
     await saveSettings(sessionPath, settings);
 
-    // Trigger view update
-    this._onDidChangeTreeData.fire(undefined);
-
     if (libraryCopy) {
       await libraryCopy;
     }
+  }
+
+  refresh() {
+    // Trigger view update
+    this._onDidChangeTreeData.fire(undefined);
   }
 }

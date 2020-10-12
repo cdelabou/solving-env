@@ -1,77 +1,82 @@
 import { Interface as ReadlineInterface } from 'readline';
 
-export function charToInt(char: string) {
-	return char.charCodeAt(0);
+
+export default function handleInput(rl: ReadlineInterface): InputHandler {
+	let inputHandler = new InputHandler();
+
+	rl.on("line", (value: string) => {
+		inputHandler.feed(value);
+	});
+
+	return inputHandler;
 }
 
-export function intToChar(int: number) {
-	return String.fromCharCode(int);
-}
+class InputHandler {
+	private cache: string[] = [];
+	private subscriber: (content: string) => any;
 
-export function tuples<M>(array: string[] | string[][], castCallback: (...args: string[]) => M): M[] {
-	let result: M[] = [];
+	constructor() { }
 
-	for (let i = 0; i < array.length; i++) {
-		let tuple = array[i];
+	feed(line: string) {
+		if (this.subscriber) {
+			const sub = this.subscriber;
+			this.subscriber = undefined;
+			sub(line);
+		} else {
+			this.cache.push(line);
+		}
+	}
 
-		if (typeof tuple === "string") {
-			tuple = tuple.split(" ");
+	getLine() {
+		if (this.cache.length <= 0) {
+			return new Promise<string>((res, rej) => {
+				this.subscriber = res;
+			})
 		}
 
-		result.push(castCallback(...tuple));
+		return Promise.resolve(this.cache.shift());
+	}
+
+	async tuples<M>(lines: number, castCallback: (...args: string[]) => M, separator = " "): Promise<M[]> {
+		let result: M[] = [];
+	
+		for (let i = 0; i < lines; i++) {
+			let line = await this.getLine();
+			result.push(castCallback(...line.split(separator)));
+		}
+	
+		return result;
+	}
+	
+	async num() {
+		const line = await this.getLine();
+		return parseFloat(line);
+	}
+	
+	async nums(separator = " "): Promise<number[]> {
+		const line = await this.getLine();
+		return line.split(separator).map(parseFloat)
+	}
+	
+	async numsMat(lines: number, separator = " "): Promise<number[][]> {
+		let data: number[][] = [];
+	
+		for (let i = 0; i < lines; i++) {
+			const line = await this.nums(separator);
+			data.push(line);
+		}
 		
-	}
-
-	return result;
-}
-
-export function num(value: string | string[]): number {
-	if (value instanceof Array) {
-		return parseFloat(value[0]);
-	}
-
-	return parseFloat(value);
-	
-}
-
-export function nums(array: string | string[], separator = " "): number[] {
-	if (typeof array == "string") {
-		return nums(array.split(separator));
-	}
-
-	return array.map(parseFloat)
-}
-
-export function numsMat(array: string[] | string[][], separator = " "): number[][] {
-	let data: number[][] = [];
-
-	for (let i = 0; i < array.length; i++) {
-		data.push(nums(array[i], separator))
+		return data;
 	}
 	
-	return data;
-}
-
-export function charsMat(array: string[], separator = ""): string[][] {
-	let data: string[][] = [];
-	
-	for (let i = 0; i < array.length; i++) {
-		data.push(array[i].split(separator))
+	async charsMat(lines: number, separator = ""): Promise<string[][]> {
+		let data: string[][] = [];
+		
+		for (let i = 0; i < lines; i++) {
+			const line = await this.getLine();
+			data.push(line.split(separator))
+		}
+		
+		return data;
 	}
-	
-	return data;
-}
-
-export default function read(rl: ReadlineInterface): Promise<string[]> {
-	let input: string[] = [];
-
-	return new Promise<string[]>((resolve, reject) => {
-		rl.on("line", (value: string) => {
-			input.push(value);
-		});
-
-		rl.on("close", function() {
-			resolve(input);				
-		});
-	});
 }

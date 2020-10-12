@@ -9,7 +9,7 @@ import * as path from "path";
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	const sessionProvider = new SessionProvider(vscode.workspace.workspaceFolders![0].uri.fsPath, context);
+	const sessionProvider = new SessionProvider(vscode.workspace.workspaceFolders![0].uri, context);
 	const sessionTreeView = vscode.window.createTreeView('solvenv.sessions', {
 		treeDataProvider: sessionProvider
 	});
@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 	problemTreeView.onDidChangeSelection((event) => {
 		if (event.selection.length == 1) {
 			const item = event.selection[0];
-			const fileToEdit = vscode.Uri.file(path.join(item.path, "index.ts"));
+			const fileToEdit = vscode.Uri.joinPath(item.path, "index.ts");
 			vscode.window.showTextDocument(fileToEdit);
 		}
 	})
@@ -55,8 +55,9 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 
 		if (name) {
-			sessionProvider.createNew(name);
-			vscode.window.showInformationMessage(`Session '${name}' has been create successfully.`);
+			await sessionProvider.createNew(name);
+			sessionProvider.refresh();
+			vscode.window.showInformationMessage(`Session '${name}' has been created successfully.`);
 		}
 
 	});

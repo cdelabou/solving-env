@@ -50,9 +50,10 @@ export async function fetchExamples(session: SessionTreeItem, context: vscode.Ex
 	const fileName = await vscode.window.showQuickPick(options.map(it => it.name));
 
 	if (fileName) {
+		const settings = await session.settings();
 		// TODO const { clearSets } = await inquirer.prompt([clearSetsQuestion]);
-		const inputRegex = new RegExp(session.settings.inputFilePattern!);
-		const outputRegex = new RegExp(session.settings.outputFilePattern!);
+		const inputRegex = new RegExp(settings.inputFilePattern!);
+		const outputRegex = new RegExp(settings.outputFilePattern!);
 
 		//if (clearSets) {
 			// TODO clear
@@ -69,13 +70,13 @@ export async function fetchExamples(session: SessionTreeItem, context: vscode.Ex
 
 				if (file &&  (match = fileName.match(inputRegex)) !== null) {
 					entry.pipe(createWriteStream(
-						resolve(path.join(session.path, `inputs/input${parseInt(match[1])}.txt`))
+						resolve(path.join(session.path.fsPath, `inputs/input${parseInt(match[1])}.txt`))
 					));
 
 					count ++;
 				} else if (file &&  (match = fileName.match(outputRegex)) !== null) {
 					entry.pipe(createWriteStream(
-						resolve(path.join(session.path, `outputs/output${parseInt(match[1])}.txt`))
+						resolve(path.join(session.path.fsPath, `outputs/output${parseInt(match[1])}.txt`))
 					));
 				} else {
 					entry.autodrain();

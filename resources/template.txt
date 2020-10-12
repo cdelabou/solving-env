@@ -3,17 +3,19 @@ declare var log: Function;
 
 // Compilé depuis des fichiers typescript :)
 
-// TODO
-import input, { num, nums, numsMat, tuples } from "../../../lib/util/input";
+import handleInput from "../../../lib/util/input";
+import input, { num, nums, numsMat, tuples } from "../../../lib/util/transform";
 
+async function main() {
+	const handler = handleInput(readline_object);
 
-input(readline_object).then((data: string[]) => {
-	// Your code here
-	let n = num(data[0]);
+	let n = handler.num();
 
 	return n;
-})
-.then((result: any) => {
+}
+
+
+main().then((result: any) => {
 	if (result !== undefined) {
 		console.log(result);
 	}

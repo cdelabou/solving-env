@@ -2,13 +2,14 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { PROBLEM_PREFIX } from './SessionProvider';
 import { SessionTreeItem } from "./SessionTreeItem";
+import { bundle } from '../Bundler';
 
 export class ProblemTreeItem extends vscode.TreeItem {
 	public readonly index: number;
 
 	constructor(
 		public readonly folderName: string,
-		private sessionPath: string
+		private sessionPath: vscode.Uri
 	) {
 		super("Problem " + folderName.split(PROBLEM_PREFIX)[1], vscode.TreeItemCollapsibleState.None);
 
@@ -16,7 +17,7 @@ export class ProblemTreeItem extends vscode.TreeItem {
 	}
 
 	public get path() {
-		return path.join(this.sessionPath, this.folderName);
+		return vscode.Uri.joinPath(this.sessionPath, this.folderName);
 	}
 
 	iconPath = {
@@ -26,6 +27,8 @@ export class ProblemTreeItem extends vscode.TreeItem {
 }
 
 export class ProblemProvider implements vscode.TreeDataProvider<ProblemTreeItem> {
+	private fileWatcher: vscode.FileSystemWatcher | undefined;
+
 	constructor(public sessionItem: SessionTreeItem | null) { }
 
 	getTreeItem(element: ProblemTreeItem): ProblemTreeItem {
@@ -37,7 +40,7 @@ export class ProblemProvider implements vscode.TreeDataProvider<ProblemTreeItem>
 
 		// Root -> returns sessions names
 		if (!element && item) {
-			return Promise.resolve(item.problems)
+			return item.problems();
 		}
 
 		return Promise.resolve([]);
@@ -49,6 +52,12 @@ export class ProblemProvider implements vscode.TreeDataProvider<ProblemTreeItem>
 	changeSession(item: SessionTreeItem): void {
 		this.sessionItem = item;
 		this.resfresh();
+		
+		this.fileWatcher?.dispose();
+		this.fileWatcher = vscode.workspace.createFileSystemWatcher("**/workspace/" + item.label + "/*/index.ts");
+		this.fileWatcher.onDidChange((uri) => {
+			bundle(item, uri);
+		});
 	}
 
 	resfresh() {

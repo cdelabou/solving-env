@@ -1,27 +1,43 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
 import { ProblemTreeItem } from "./ProblemProvider";
-import { PROBLEM_PREFIX } from './SessionProvider';
+import { PROBLEM_PREFIX, WORKSPACE_DIRECTORY } from './SessionProvider';
 import { loadSettings, saveSettings, SessionSettings } from './Settings';
+import { promises } from 'dns';
 
+const fs = vscode.workspace.fs;
+const Uri = vscode.Uri;
 
 export class SessionTreeItem extends vscode.TreeItem {
-  public readonly problems: ProblemTreeItem[] = [];
+  private _problems: ProblemTreeItem[] | null = null;
   private _settings: SessionSettings | null = null;
 
   constructor(
     public readonly label: string,
-    private workspacePath: string,
+    public readonly rootFolder: vscode.Uri,
     private context: vscode.ExtensionContext
   ) {
     super(label, vscode.TreeItemCollapsibleState.None);
 
-    const subFolders = fs.readdirSync(path.join(this.path));
+    
+  }
 
-    this.problems = subFolders.filter(file => file.startsWith(PROBLEM_PREFIX)).map(file => {
-      return new ProblemTreeItem(file, this.path);
-    });
+  async problems() {
+    if (!this._problems) {
+      const subFolders = await fs.readDirectory(this.path);
+
+      this._problems = subFolders.filter(file => file[0].startsWith(PROBLEM_PREFIX)).map(file => {
+        return new ProblemTreeItem(file[0], this.path);
+      });
+    }
+
+    return this._problems;
+  }
+
+  async addProblem(problem: ProblemTreeItem) {
+    const problems = await this.problems();
+
+    problems.push(problem);
   }
 
   iconPath = {
@@ -30,13 +46,14 @@ export class SessionTreeItem extends vscode.TreeItem {
   };
 
   public get path() {
-    return path.join(this.workspacePath, this.label);
+    return vscode.Uri.joinPath(this.rootFolder, WORKSPACE_DIRECTORY, this.label);
   }
 
   public async newProblem() {
-    let index = this.problems.length;
+    const problems = await this.problems();
+    let index = problems.length;
 
-    while (this.problems.some(it => it.folderName === PROBLEM_PREFIX + index)) {
+    while (problems.some(it => it.folderName === PROBLEM_PREFIX + index)) {
       index += 1;
     }
 
@@ -44,29 +61,35 @@ export class SessionTreeItem extends vscode.TreeItem {
     const sessionPath = this.path;
 
     // Create all problem folders
-    await fs.promises.mkdir(path.join(sessionPath, problemFolder, "inputs"), { recursive: true });
-    await fs.promises.mkdir(path.join(sessionPath, problemFolder, "outputs"), { recursive: true });
+    await fs.createDirectory(vscode.Uri.joinPath(sessionPath, problemFolder, "inputs"));
+    await fs.createDirectory(vscode.Uri.joinPath(sessionPath, problemFolder, "outputs"));
 
     // Copy template
-    await fs.promises.copyFile(this.context.extensionPath + "/resources/template.txt", path.join(sessionPath, problemFolder, "index.ts"));
+    await fs.copy(
+      Uri.joinPath(this.context.extensionUri, "resources/template.txt"),
+      Uri.joinPath(sessionPath, problemFolder, "index.ts")
+    );
 
-    if (this.settings.importSets) {
+    const settings = await this.settings();
+    if (settings.importSets) {
       // TODO await fetchExamples(this);
     }
 
-    this.problems.push(new ProblemTreeItem(problemFolder, sessionPath));
+    await this.addProblem(new ProblemTreeItem(problemFolder, sessionPath));
   }
 
-  public get settings(): SessionSettings {
-    if (this._settings === null) {
-      this._settings = loadSettings(this.path);
+  /**
+   * Async getter / setter for settings
+   * @param newValue new settings value
+   */
+  public async settings(newValue?: SessionSettings) {
+    if (newValue) {
+      saveSettings(this.path, newValue);
+      this._settings = newValue;
+    } else if (this._settings === null) {
+        this._settings = await loadSettings(this.path);
     }
 
     return this._settings;
-  }
-
-  public set settings(settings: SessionSettings) {
-    saveSettings(this.path, settings);
-    this._settings = settings;
   }
 }
