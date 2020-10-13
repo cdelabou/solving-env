@@ -6,6 +6,7 @@ import * as fsextra from "fs-extra";
 import { SessionTreeItem } from './SessionTreeItem';
 import { saveSettings, SessionSettings } from "./Settings"
 import chalk = require('chalk');
+import { setupWorkspace } from '../Workspace';
 
 export const PROBLEM_PREFIX = "problem";
 export const LIBRARIES_DIRECTORY = "lib";
@@ -42,7 +43,7 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
         .then(async (files) => {
           // Copy libraries if they were not and some sessions exists
           if (files.length > 0 && !this.areLibrariesCopied) {
-            await this.copyLibraries();
+            await setupWorkspace(this.rootDir, this.context);
           }
 
           return files.map(file => new SessionTreeItem(
@@ -60,13 +61,6 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
   private _onDidChangeTreeData: vscode.EventEmitter<SessionTreeItem | undefined> = new vscode.EventEmitter<SessionTreeItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<SessionTreeItem | undefined> = this._onDidChangeTreeData.event;
 
-  copyLibraries() {
-    return vscode.workspace.fs.copy(
-      vscode.Uri.joinPath(this.context.extensionUri, "resources/lib"),
-      vscode.Uri.joinPath(this.rootDir, "lib")
-    ).then(() => this.areLibrariesCopied = true);
-  }
-
   async createNew(name: string) {
     const sessionPath = vscode.Uri.joinPath(this.rootDir, WORKSPACE_DIRECTORY, name);
     let libraryCopy: Thenable<any> | undefined;
@@ -78,7 +72,7 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
     }
 
     if (!this.areLibrariesCopied) {
-      libraryCopy = this.copyLibraries();
+      libraryCopy = setupWorkspace(this.rootDir, this.context);
     }
 
     // Create directory

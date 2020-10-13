@@ -40,13 +40,23 @@
 		"viewsWelcome": [
 			{
 				"view": "solvenv.sessions",
-				"contents": "No session found\n[Create Session](command:solvenv.new_session)"
+				"contents": "No session found\n[Setup the environment](command:solvenv.init)"
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
 					"command": "solvenv.new_session",
+					"when": "view == solvenv.sessions",
+					"group": "navigation"
+				},
+				{
+					"command": "solvenv.refresh",
+					"when": "view == solvenv.sessions",
+					"group": "navigation"
+				},
+				{
+					"command": "solvenv.init",
 					"when": "view == solvenv.sessions",
 					"group": "navigation"
 				},
@@ -72,8 +82,9 @@
 					"group": "inline"
 				},
 				{
-					"command": "solvenv.helloWorld",
-					"when": "true"
+					"command": "solvenv.build",
+					"when": "view == solvenv.problems",
+					"group": "inline"
 				}
 			]
 		},
@@ -108,6 +119,30 @@
 				"icon": {
 					"light": "resources/light/add-black.svg",
 					"dark": "resources/dark/add-white.svg"
+				}
+			},
+			{
+				"command": "solvenv.build",
+				"title": "Build problem and copy result",
+				"icon": {
+					"light": "resources/light/build-black.svg",
+					"dark": "resources/dark/build-white.svg"
+				}
+			},
+			{
+				"command": "solvenv.refresh",
+				"title": "Refresh sessions",
+				"icon": {
+					"light": "resources/light/refresh-black.svg",
+					"dark": "resources/dark/refresh-white.svg"
+				}
+			},
+			{
+				"command": "solvenv.init",
+				"title": "Initialize workspace",
+				"icon": {
+					"light": "resources/light/init-black.svg",
+					"dark": "resources/dark/init-white.svg"
 				}
 			}
 		]

@@ -13,7 +13,7 @@ export default function handleInput(rl: ReadlineInterface): InputHandler {
 
 class InputHandler {
 	private cache: string[] = [];
-	private subscriber: (content: string) => any;
+	private subscriber: undefined | ((content: string) => any);
 
 	constructor() { }
 
@@ -34,7 +34,7 @@ class InputHandler {
 			})
 		}
 
-		return Promise.resolve(this.cache.shift());
+		return Promise.resolve(this.cache.shift()!);
 	}
 
 	async tuples<M>(lines: number, castCallback: (...args: string[]) => M, separator = " "): Promise<M[]> {

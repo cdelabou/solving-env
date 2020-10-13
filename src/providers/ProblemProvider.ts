@@ -20,6 +20,13 @@ export class ProblemTreeItem extends vscode.TreeItem {
 		return vscode.Uri.joinPath(this.sessionPath, this.folderName);
 	}
 
+	public setIcon(name: string) {
+		this.iconPath = {
+			light: path.join(__filename, '..', '..', '..', 'resources', 'light', name + '-black.svg'),
+			dark: path.join(__filename, '..', '..', '..', 'resources', 'dark', name + '-white.svg')
+		}
+	}
+
 	iconPath = {
 		light: path.join(__filename, '..', '..', '..', 'resources', 'light', 'session-black.svg'),
 		dark: path.join(__filename, '..', '..', '..', 'resources', 'dark', 'session-white.svg')
@@ -53,11 +60,11 @@ export class ProblemProvider implements vscode.TreeDataProvider<ProblemTreeItem>
 		this.sessionItem = item;
 		this.resfresh();
 		
-		this.fileWatcher?.dispose();
-		this.fileWatcher = vscode.workspace.createFileSystemWatcher("**/workspace/" + item.label + "/*/index.ts");
-		this.fileWatcher.onDidChange((uri) => {
-			bundle(item, uri);
-		});
+		//this.fileWatcher?.dispose();
+		//this.fileWatcher = vscode.workspace.createFileSystemWatcher("**/workspace/" + item.label + "/*/index.ts");
+		//this.fileWatcher.onDidChange((uri) => {
+		//	bundle(item, uri);
+		//});
 	}
 
 	resfresh() {
