@@ -82,6 +82,11 @@
 					"group": "inline"
 				},
 				{
+					"command": "solvenv.run",
+					"when": "view == solvenv.problems",
+					"group": "inline"
+				},
+				{
 					"command": "solvenv.build",
 					"when": "view == solvenv.problems",
 					"group": "inline"
@@ -143,6 +148,14 @@
 				"icon": {
 					"light": "resources/light/init-black.svg",
 					"dark": "resources/dark/init-white.svg"
+				}
+			},
+			{
+				"command": "solvenv.run",
+				"title": "Run",
+				"icon": {
+					"light": "resources/light/run-black.svg",
+					"dark": "resources/dark/run-white.svg"
 				}
 			}
 		]

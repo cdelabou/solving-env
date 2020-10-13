@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { SessionTreeItem } from './SessionTreeItem';
-import Settings, { SessionSettings } from "./Settings"
+import Settings from "./Settings"
 import { setupWorkspace } from '../Workspace';
 import { EXPORT_INPUT_FILE, LOCAL_INPUT_FILE } from '../Bundler';
 

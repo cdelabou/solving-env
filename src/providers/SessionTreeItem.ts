@@ -3,6 +3,7 @@ import * as path from 'path';
 import { ProblemTreeItem } from "./ProblemProvider";
 import { PROBLEM_PREFIX, WORKSPACE_DIRECTORY } from './SessionProvider';
 import Settings, { SessionSettings } from './Settings';
+import { fetchExamples } from '../testsets';
 
 const fs = vscode.workspace.fs;
 const Uri = vscode.Uri;
@@ -69,12 +70,13 @@ export class SessionTreeItem extends vscode.TreeItem {
       Uri.joinPath(sessionPath, problemFolder, "index.ts")
     );
 
+    const problem = new ProblemTreeItem(problemFolder, sessionPath)
+    await this.addProblem(problem);
+
     const settings = await this.settings();
     if (settings.importSets) {
-      // TODO await fetchExamples(this);
+      await fetchExamples(settings, problem, this.context);
     }
-
-    await this.addProblem(new ProblemTreeItem(problemFolder, sessionPath));
   }
 
   /**

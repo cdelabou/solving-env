@@ -1,12 +1,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { ProblemProvider, ProblemTreeItem } from './providers/ProblemProvider';
+import { ProblemProvider, ProblemTreeItem, TestTreeItem } from './providers/ProblemProvider';
 import { SessionProvider } from './providers/SessionProvider';
 import { SessionTreeItem } from "./providers/SessionTreeItem";
 import * as path from "path";
 import { bundle } from './Bundler';
 import { setupWorkspace } from './Workspace';
+import { runTest, runTests } from './testsets';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -30,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	problemTreeView.onDidChangeSelection((event) => {
-		if (event.selection.length == 1) {
+		if (event.selection.length == 1 && event.selection[0] instanceof ProblemTreeItem) {
 			const item = event.selection[0];
 			const fileToEdit = vscode.Uri.joinPath(item.path, "index.ts");
 			vscode.window.showTextDocument(fileToEdit);
@@ -97,6 +98,26 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 
 			await bundle(problemProvider.sessionItem!, item);
+		}),
+
+		vscode.commands.registerCommand('solvenv.run', async (item: ProblemTreeItem | TestTreeItem) => {
+			if (!item) {
+				vscode.window.showWarningMessage(`No problem specified, use the view on the left side of the editor instead.`);
+				return;
+			}
+			
+
+			if (item instanceof ProblemTreeItem) {
+				await bundle(problemProvider.sessionItem!, item);
+
+				runTests(item);
+			} else {
+				await bundle(problemProvider.sessionItem!, item.parent);
+
+				runTest(item);
+			}
+
+			
 		}),
 
 		vscode.commands.registerCommand('solvenv.refresh', () => sessionProvider.refresh()),
