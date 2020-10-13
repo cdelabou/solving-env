@@ -9,7 +9,7 @@ import input, { num, nums, numsMat, tuples } from "../../../lib/util/transform";
 async function main() {
 	const handler = handleInput(readline_object);
 
-	let n = handler.num();
+	let n = await handler.num();
 
 	return n;
 }

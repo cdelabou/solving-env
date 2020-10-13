@@ -1,27 +1,15 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as fsextra from "fs-extra";
 
 import { SessionTreeItem } from './SessionTreeItem';
-import { saveSettings, SessionSettings } from "./Settings"
-import chalk = require('chalk');
+import Settings, { SessionSettings } from "./Settings"
 import { setupWorkspace } from '../Workspace';
+import { EXPORT_INPUT_FILE, LOCAL_INPUT_FILE } from '../Bundler';
 
 export const PROBLEM_PREFIX = "problem";
 export const LIBRARIES_DIRECTORY = "lib";
 export const WORKSPACE_DIRECTORY = "workspace";
-
-const defaultAvailableSetups = {
-  "battledev": {
-    importSets: true,
-    inputFilePattern: "^.+?input([0-9]+)\\.txt$",
-    outputFilePattern: "^.+?output([0-9]+)\\.txt$"
-  },
-  "coding-battle": {
-    importSets: false
-  }
-};
 
 export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem> {
   private areLibrariesCopied = false;
@@ -75,10 +63,8 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
       libraryCopy = setupWorkspace(this.rootDir, this.context);
     }
 
-    // Create directory
-    await vscode.workspace.fs.createDirectory(sessionPath);
 
-    const setups = this.context.globalState.get<{ [name: string]: SessionSettings }>("availableSetups", defaultAvailableSetups);
+    const setups = await Settings.configurations(this.context);
 
     // Ask for settings
     const result = await vscode.window.showQuickPick(Object.keys(setups).map(label => ({ label })), {
@@ -90,9 +76,28 @@ export class SessionProvider implements vscode.TreeDataProvider<SessionTreeItem>
       return;
     }
 
+    // Create directory
+    await vscode.workspace.fs.createDirectory(sessionPath);
+
     // Save and write settings
     const settings = setups[result.label];
-    await saveSettings(sessionPath, settings);
+    await Settings.save(sessionPath, settings);
+    
+    // Copy input file
+    const exportInputFile = vscode.Uri.joinPath(sessionPath, EXPORT_INPUT_FILE + ".ts");
+    const defaultInputFile = vscode.Uri.joinPath(this.context.extensionUri, "resources", "configurations", "default_input.ts");
+
+    await vscode.workspace.fs.copy(defaultInputFile, vscode.Uri.joinPath(sessionPath, LOCAL_INPUT_FILE + ".ts"));
+
+    // Custom input for export
+    if (settings.customInput) {
+      await vscode.workspace.fs.copy(
+        vscode.Uri.joinPath(this.context.extensionUri, "resources", "configurations", result.label, "input.ts"),
+        exportInputFile
+      );
+    }
+
+    vscode.window.showInformationMessage("Session settings saved !");
 
     if (libraryCopy) {
       await libraryCopy;

@@ -1,0 +1,6 @@
+{
+    "importSets": true,
+    "inputFilePattern": "^.+?input([0-9]+)\\.txt$",
+	"outputFilePattern": "^.+?output([0-9]+)\\.txt$",
+	"customInput": true
+  }

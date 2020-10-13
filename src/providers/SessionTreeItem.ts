@@ -2,8 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { ProblemTreeItem } from "./ProblemProvider";
 import { PROBLEM_PREFIX, WORKSPACE_DIRECTORY } from './SessionProvider';
-import { loadSettings, saveSettings, SessionSettings } from './Settings';
-import { promises } from 'dns';
+import Settings, { SessionSettings } from './Settings';
 
 const fs = vscode.workspace.fs;
 const Uri = vscode.Uri;
@@ -15,7 +14,7 @@ export class SessionTreeItem extends vscode.TreeItem {
   constructor(
     public readonly label: string,
     public readonly rootFolder: vscode.Uri,
-    private context: vscode.ExtensionContext
+    public readonly context: vscode.ExtensionContext
   ) {
     super(label, vscode.TreeItemCollapsibleState.None);
 
@@ -84,10 +83,10 @@ export class SessionTreeItem extends vscode.TreeItem {
    */
   public async settings(newValue?: SessionSettings) {
     if (newValue) {
-      saveSettings(this.path, newValue);
+      Settings.save(this.path, newValue);
       this._settings = newValue;
     } else if (this._settings === null) {
-        this._settings = await loadSettings(this.path);
+        this._settings = await Settings.load(this.path);
     }
 
     return this._settings;

@@ -1,5 +1,6 @@
 import * as readline from 'readline';
 
+// Input should provide readline_object and log() method
 const readline_object = readline.createInterface({
     input: process.stdin
 });
