@@ -10,6 +10,8 @@ import * as childProcess from "child_process";
 
 const { fs } = vscode.workspace; 
 
+const testsTerm = vscode.window.createTerminal("SolvEnv Tests");
+
 async function getDownloadFolderPath(context: vscode.ExtensionContext) {
 	let downloadsFolder = context.globalState.get<string | undefined>("downloadsFolder", undefined);
 
@@ -100,8 +102,12 @@ export async function fetchExamples(settings: SessionSettings, problem: ProblemT
 	}
 }
 
+export function runProblem(problem: ProblemTreeItem) {
+	testsTerm.show();
+	testsTerm.sendText("node " + vscode.Uri.joinPath(problem.path, "local.js").fsPath, true);
+}
 
-function runLoadedTest(test: TestTreeItem, programPath: string): Promise<{ success: boolean, diffs?: any[] }> {
+function runLoadedTest(test: TestTreeItem, programPath: string): Promise<{ success: boolean, diffs?: any[], label: string }> {
 	return new Promise((res, rej) => {
 		const process = childProcess.spawn("node", [programPath]);
 		let output = "";
@@ -111,12 +117,12 @@ function runLoadedTest(test: TestTreeItem, programPath: string): Promise<{ succe
 		});
 		process.stdout?.on("close", () => {
 			if (!test.output || output === test.output) {
-				res({ success: true });
+				res({ success: true, label: test.label! });
 			}
 
 			else {
 				// TODO diff
-				res({ success: false, diffs: [output, test.output] });
+				res({ success: false, diffs: [output, test.output], label: test.label! });
 			}
 		});
 
@@ -133,11 +139,28 @@ export async function runTests(problem: ProblemTreeItem) {
 	const tests = await problem.getTests();
 	const programPath = vscode.Uri.joinPath(problem.path, "local.js").fsPath;
 
+	let results = [];
 	for (let key in tests) {
 		const result = await runLoadedTest(tests[key], programPath);
 		console.log(result);
+		results.push(result);
 	}
-	
+	// TODO
+	let content = "";
+	results.forEach(result => {
+		if (result.success) {
+			content += `
+				<div class="success">${result.label}</div>
+			`;
+		} else {
+			content += `
+				<div>
+					<div class="fail">${result.label}</div>
+
+				</div>
+			`;
+		}
+	})
 }
 
 

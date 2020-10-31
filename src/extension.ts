@@ -4,10 +4,9 @@ import * as vscode from 'vscode';
 import { ProblemProvider, ProblemTreeItem, TestTreeItem } from './providers/ProblemProvider';
 import { SessionProvider } from './providers/SessionProvider';
 import { SessionTreeItem } from "./providers/SessionTreeItem";
-import * as path from "path";
 import { bundle } from './Bundler';
 import { setupWorkspace } from './Workspace';
-import { runTest, runTests } from './testsets';
+import { runTest, runTests, runProblem } from './TestSets';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -109,8 +108,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 			if (item instanceof ProblemTreeItem) {
 				await bundle(problemProvider.sessionItem!, item);
-
-				runTests(item);
+				runProblem(item);
+				//runTests(item);
 			} else {
 				await bundle(problemProvider.sessionItem!, item.parent);
 
